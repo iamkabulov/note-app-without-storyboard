@@ -11,10 +11,8 @@ import UIKit
 class NoticesViewController: UIViewController, NoteViewControllerDelegate {
 
     private let noteViewController = NoteViewController(note: "")
+    var notes = ["Первая заметка"]
 
-    var note: NotesData!
-    var notes = [NotesData.init("Первая заметка")]
-    
     lazy var createButton: UIBarButtonItem = {
         let barButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(createButtonTapped))
         barButtonItem.tintColor = .systemBlue
@@ -24,7 +22,6 @@ class NoticesViewController: UIViewController, NoteViewControllerDelegate {
     var tableView = UITableView()
     var navBarItem = UINavigationItem()
 
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -38,11 +35,23 @@ class NoticesViewController: UIViewController, NoteViewControllerDelegate {
 
     @objc func createButtonTapped() {
         let vc = NoteViewController(note: "")
+        vc.delegate = self
         navigationController?.pushViewController(vc, animated: true)
     }
 
     func didTappedSaveButton(note: String) {
-        UserDefaults.standard.set(note, forKey: NotesData.Keys.note2.rawValue)
+        let note = note
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            notes[selectedIndexPath.row] = note
+            tableView.reloadRows(at: [selectedIndexPath], with: .none)
+            saveNote(noteValue: notes)
+        }
+        else {
+            let newIndexPath = NSIndexPath(row: notes.count, section: 0)
+            notes.append(note)
+            tableView.insertRows(at: [newIndexPath as IndexPath], with: .bottom)
+            saveNote(noteValue: notes)
+        }
     }
 }
 
@@ -60,7 +69,7 @@ extension NoticesViewController {
         tableView.rowHeight = NoticeCell.rowHeight
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         view.addSubview(tableView)
 
         NSLayoutConstraint.activate([
@@ -73,7 +82,7 @@ extension NoticesViewController {
 }
 
 extension NoticesViewController: UINavigationBarDelegate {
-    
+
 }
 
 extension NoticesViewController: UITableViewDataSource {
@@ -84,14 +93,15 @@ extension NoticesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: NoticeCell.reuseId, for: indexPath) as! NoticeCell
         cell.selectionStyle = .none
-        cell.noteLabel.text = notes[indexPath.row].notes
+        cell.noteLabel.text = notes[indexPath.row]
         return cell
     }
 }
 
 extension NoticesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let vc = NoteViewController(note: notes[indexPath.row].notes)
+        let vc = NoteViewController(note: notes[indexPath.row])
+        vc.delegate = self
         navigationController?.pushViewController(vc, animated: true)
 
     }
@@ -100,15 +110,17 @@ extension NoticesViewController: UITableViewDelegate {
         if editingStyle == .delete {
             notes.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
+            saveNote(noteValue: notes)
         }
     }
 
-    func saveNote() {
+    func saveNote(noteValue: [String]) {
+        UserDefaults.standard.set(noteValue, forKey: "key")
     }
 
 
-    func loadNotes() {
-        UserDefaults.standard.stringArray(forKey: NotesData.Keys.notes.rawValue)
+    func loadNotes() -> [String] {
+        UserDefaults.standard.stringArray(forKey: "key") ?? ["nursik123"]
     }
 
     func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {

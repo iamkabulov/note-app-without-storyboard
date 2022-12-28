@@ -13,6 +13,7 @@ protocol NoteViewControllerDelegate: AnyObject {
 }
 
 class NoteViewController: UIViewController {
+    
     lazy var noteView = NoteView(note: self.note)
     let note: String
     weak var delegate: NoteViewControllerDelegate?
@@ -23,11 +24,12 @@ class NoteViewController: UIViewController {
     }()
 
     @objc func saveButtonTapped() {
-//        delegate?.didTappedSaveButton(note: noteView.noteTextField.text!)
-        navigationController?.popViewController(animated: true)
-        UserDefaults.standard.set(noteView.noteTextField.text!, forKey: NotesData.Keys.notes.rawValue)
+        if noteView.noteTextField.text != "" {
+            navigationController?.popViewController(animated: true)
+            delegate?.didTappedSaveButton(note: noteView.noteTextField.text!)
+        }
     }
-    
+
 
     init(note: String) {
         self.note = note

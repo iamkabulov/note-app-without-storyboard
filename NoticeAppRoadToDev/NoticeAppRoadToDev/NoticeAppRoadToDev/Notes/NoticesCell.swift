@@ -27,7 +27,7 @@ class NoticeCell: UITableViewCell {
 extension NoticeCell {
     func setup() {
         noteLabel.translatesAutoresizingMaskIntoConstraints = false
-        noteLabel.font = UIFont.preferredFont(forTextStyle: .caption1)
+        noteLabel.font = UIFont.preferredFont(forTextStyle: .title1)
         noteLabel.adjustsFontForContentSizeCategory = true
         contentView.addSubview(noteLabel)
     }
